@@ -2,7 +2,6 @@ package aoc.second
 
 import java.lang.RuntimeException
 
-
 data class Four(val opCode: Int, val in1: Int, val in2: Int, val out: Int)
 
 fun solve1(data: String): String {
@@ -18,7 +17,7 @@ fun solve1(data: String): String {
     return list.joinToString(",")
 }
 
-fun apply(list: MutableList<String>, four: Four) {
+private fun apply(list: MutableList<String>, four: Four) {
     when (four.opCode) {
         1 -> {
             list[four.out] = calc(list, four) { i1: Int, i2: Int -> i1 + i2 }
@@ -29,7 +28,7 @@ fun apply(list: MutableList<String>, four: Four) {
 }
 
 
-fun calc(list: MutableList<String>, four: Four, function: (Int, Int) -> Int) =
+private fun calc(list: MutableList<String>, four: Four, function: (Int, Int) -> Int) =
     function(getInt(list, four.in1), getInt(list, four.in2)).toString()
 
 
@@ -60,6 +59,6 @@ private fun createFour(opCode1: Int, split: List<String>, i: Int) =
 private fun getInt(split: List<String>, i: Int) =
     Integer.parseInt(split[i].toString())
 
-fun solve2(mass: String, firstCall: Boolean = false): String {
-    return mass
+fun solve2(data: String): Int {
+    return Integer.parseInt(solve1(data).split(",")[0])
 }
