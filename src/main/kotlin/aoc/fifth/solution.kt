@@ -1,4 +1,4 @@
-package aoc.second
+package aoc.fifth
 
 import java.lang.RuntimeException
 
