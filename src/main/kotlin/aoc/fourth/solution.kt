@@ -36,3 +36,36 @@ class Solve1(private val range: IntRange) {
     }
 }
 
+class Solver2 {
+    fun verify(num: Int): Boolean {
+        return isPairPartOfLargerGroup(num)
+    }
+
+    private fun isPairPartOfLargerGroup(num: Int): Boolean {
+        val lst = mutableListOf<MutablePair<Char>>()
+
+        for (c in "$num") {
+            val last = lst.getOrElse(lst.size - 1) { MutablePair(c, 0) }
+            when {
+                last.second == 0 -> {
+                    last.increment()
+                    lst.add(last)
+                }
+                last.first == c -> last.increment()
+                else -> lst.add(MutablePair(c, 1))
+            }
+        }
+
+        return lst.map { it.second }.contains(2)
+
+
+    }
+}
+
+
+
+data class MutablePair<T>(val first: T, var second: Int) {
+    fun increment() {
+        second += 1
+    }
+}
