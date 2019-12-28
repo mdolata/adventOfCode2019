@@ -1,5 +1,7 @@
 package aoc.sixth
 
+import aoc.util.InputReader
+
 
 fun main() {
     val values = mapOf(
@@ -22,6 +24,6 @@ fun main() {
         .map { Pair(solve2(it.key.trim()), it.value) }
         .forEach { println("$it   => ${it.first == it.second}") }
 
-    println(solve2(MySpec().testCase()))
+    println(solve2(InputReader().testCase(6)))
 
 }

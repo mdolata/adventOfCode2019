@@ -1,5 +1,7 @@
 package aoc.seventh
 
+import aoc.util.InputReader
+
 
 fun main() {
     val values = mapOf(
@@ -14,13 +16,6 @@ fun main() {
         .map { Pair(solve1(it.key.trim()), it.value) }
         .forEach { println("$it   => ${it.first == it.second}") }
 
-    println(solve1(MySpec().testCase()))
+    println(solve1(InputReader().testCase(7)))
 
-}
-
-class MySpec {
-
-    fun testCase(): String {
-        return MySpec::class.java.getResource("/day7.input").readText()
-    }
 }
