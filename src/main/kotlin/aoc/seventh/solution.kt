@@ -13,15 +13,13 @@ data class OpCode(val opCode: Int, val modeParam1: Int = 0, val modeParam2: Int 
 fun solve1(data: String): String {
     val list = data.split(",").toMutableList()
 
-    val amplifier = Amplifier(list)
-
     var max = Integer.MIN_VALUE
 
     var sequenceInput1 = listOf("0", "0", "0", "0", "0")
 
     for (i in 1..(5 * 5 * 5 * 5 * 5)) {
-        sequenceInput1 = nextInputSequence(sequenceInput1)
-        val output = run(amplifier, sequenceInput1)
+        sequenceInput1 = nextInputSequence(sequenceInput1, 0, 4)
+        val output = run(list, sequenceInput1)
 
         max = Integer.max(max, Integer.parseInt(output))
 
@@ -30,7 +28,7 @@ fun solve1(data: String): String {
     return "$max"
 }
 
-private fun nextInputSequence(sequenceInput1: List<String>): List<String> {
+private fun nextInputSequence(sequenceInput1: List<String>, min: Int, max: Int): List<String> {
     val tmp = sequenceInput1.map { Integer.parseInt(it) }.reversed().toMutableList()
 
     tmp[0] += 1
@@ -38,8 +36,8 @@ private fun nextInputSequence(sequenceInput1: List<String>): List<String> {
     for (i in 0 until tmp.size) {
         tmp[i] += if (isOverload) 1 else 0
 
-        if (tmp[i] == 5) {
-            tmp[i] = 0
+        if (tmp[i] > max) {
+            tmp[i] = min
             isOverload = true
         } else {
             isOverload = false
@@ -49,27 +47,33 @@ private fun nextInputSequence(sequenceInput1: List<String>): List<String> {
     val result = tmp.map { "$it" }.reversed()
 
     if (tmp.toSet().size != tmp.size) {
-        return nextInputSequence(result)
+        return nextInputSequence(result, min, max)
     }
 
     return result
 }
 
-private fun run(amplifier: Amplifier, sequenceInput1: List<String>): String {
+private fun run(
+    list: List<String>,
+    sequenceInput1: List<String>
+): String {
+
     val sequenceInput2 = mutableListOf("0")
 
-    for (i in 0..4) {
+    sequenceInput1.map { Amplifier(list, it) }.forEach {
+        amplifier ->
+        run {
+            amplifier.provideInputs(listOf(amplifier.phaseSetting, sequenceInput2.last()))
+            val output = amplifier.runCode()
 
-        amplifier.provideInputs(listOf(sequenceInput1[i], sequenceInput2[i]))
-        val output = amplifier.runCode()
-
-        sequenceInput2.add(output[0])
+            sequenceInput2.add(output[0])
+        }
     }
 
     return sequenceInput2.last()
 }
 
-class Amplifier(private val instructions: List<String>) {
+class Amplifier(instructions: List<String>, val phaseSetting: String) {
 
     private var operationInstructions = instructions.toMutableList()
     private var inputs = ArrayDeque<String>()
@@ -77,7 +81,6 @@ class Amplifier(private val instructions: List<String>) {
     private var outputs = mutableListOf<String>()
 
     fun runCode(): List<String> {
-        resetState()
         do {
             val instruction = takeNextInstruction(operationInstructions, instructionPointer)
             instructionPointer = calcNextPointerPosition(instructionPointer, instruction, operationInstructions)
@@ -89,16 +92,9 @@ class Amplifier(private val instructions: List<String>) {
         return outputs.toList()
     }
 
-    private fun resetState() {
-        operationInstructions = instructions.toMutableList()
-        instructionPointer = 0
-        outputs = mutableListOf()
-    }
-
-    public fun provideInputs(inputs: List<String>) {
+    fun provideInputs(inputs: List<String>) {
         this.inputs = ArrayDeque(inputs)
     }
-
 
     private fun calcNextPointerPosition(
         actualInstructionPointer: Int,
@@ -112,11 +108,11 @@ class Amplifier(private val instructions: List<String>) {
         return actualInstructionPointer + pointerIncrementer(instruction.opCode.opCode)
     }
 
-    fun jump(list: MutableList<String>, instruction: Instruction): Int {
+    private fun jump(list: MutableList<String>, instruction: Instruction): Int {
         return withMode(list, instruction.opCode.modeParam2, instruction.in2)
     }
 
-    fun itJump(list: MutableList<String>, instruction: Instruction): Boolean {
+    private fun itJump(list: MutableList<String>, instruction: Instruction): Boolean {
         val value = withMode(list, instruction.opCode.modeParam1, instruction.in1)
 
         return when (instruction.opCode.opCode) {
