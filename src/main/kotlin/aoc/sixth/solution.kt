@@ -31,3 +31,40 @@ fun solve1(data: String): Int {
 
 }
 
+fun solve2(data: String): Int {
+    val paths = data.split("\n")
+    val yourPath = pathToCenter(paths, "YOU")
+    val santaPath = pathToCenter(paths, "SAN")
+
+    val commonPrefix = takeCommonPart(yourPath, santaPath)
+
+    val yourWithoutPrefix = yourPath.removePrefix(commonPrefix)
+    val santaWithoutPrefix = santaPath.removePrefix(commonPrefix)
+
+    println(yourWithoutPrefix)
+    println(santaWithoutPrefix)
+
+    return santaWithoutPrefix.count { it == ')' } +
+            yourWithoutPrefix.count { it == ')' }
+}
+
+fun takeCommonPart(path1: String, path2: String): String {
+    return if (path1.startsWith(path2[0])) path1[0] + takeCommonPart(path1.substring(1), path2.substring(1))
+    else ""
+}
+
+fun pathToCenter(data: List<String>, name: String): String {
+    return if (name == "COM") "COM"
+    else {
+        val node = findNode(data, name)
+
+        val split = node.split(")")
+
+        pathToCenter(data, split[0]) + ")${split[1]}"
+    }
+}
+
+fun findNode(data: List<String>, name: String): String {
+    return data.find { it.endsWith(name) }.orEmpty()
+}
+
