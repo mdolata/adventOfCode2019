@@ -3,7 +3,12 @@ package aoc.seventh
 import java.lang.RuntimeException
 import java.util.*
 
-data class Instruction(val opCode: OpCode, val in1: Int, val in2: Int, val out: Int)
+data class Instruction(val opCode: OpCode, val in1: Int, val in2: Int, val out: Int) {
+    fun isReadOperation(): Boolean {
+        return opCode.opCode == 3
+    }
+}
+
 data class OpCode(val opCode: Int, val modeParam1: Int = 0, val modeParam2: Int = 0) {
     fun isJump(): Boolean {
         return opCode == 5 || opCode == 6
@@ -16,16 +21,93 @@ fun solve1(data: String): String {
     var max = Integer.MIN_VALUE
 
     var sequenceInput1 = listOf("0", "0", "0", "0", "0")
+    var maxSequence = listOf<String>()
 
     for (i in 1..(5 * 5 * 5 * 5 * 5)) {
         sequenceInput1 = nextInputSequence(sequenceInput1, 0, 4)
-        val output = run(list, sequenceInput1)
+        val output = runWithFeedbackLoop(list, sequenceInput1)
 
-        max = Integer.max(max, Integer.parseInt(output))
+        val parsedInt = Integer.parseInt(output)
+
+        if (parsedInt > max) {
+            max = parsedInt
+            maxSequence = sequenceInput1
+        }
+    }
+
+    println ("$maxSequence $max")
+    return "$max"
+}
+
+fun solve2(data: String): String {
+    val list = data.split(",").toMutableList()
+
+    var max = Integer.MIN_VALUE
+
+    var sequenceInput1 = listOf("5", "5", "5", "5", "5")
+    var maxSequence = listOf<String>()
+
+    for (i in 1..(5 * 5 * 5 * 5 * 5)) {
+        sequenceInput1 = nextInputSequence(sequenceInput1, 5, 9)
+        val output = runWithFeedbackLoop(list, sequenceInput1)
+
+        val parsedInt = Integer.parseInt(output)
+
+        if (parsedInt > max) {
+            max = parsedInt
+            maxSequence = sequenceInput1
+        }
+    }
+
+    println ("$maxSequence $max")
+    return "$max"
+}
+
+fun runWithFeedbackLoop(list: MutableList<String>, sequenceInput1: List<String>): String {
+    val sequenceInput2 = mutableListOf("0")
+
+    val amplifiers = sequenceInput1.map { Amplifier(list, it) }
+    for (amplifier in amplifiers) {
+
+        amplifier.provideInputs(listOf(amplifier.phaseSetting, sequenceInput2.last()))
+        val output = amplifier.runCode()
+
+        sequenceInput2.add(output[0])
 
     }
 
-    return "$max"
+    while (amplifiers.all { it.isNotHalted() }) {
+        for (amplifier in amplifiers) {
+
+            amplifier.provideInputs(listOf(sequenceInput2.last()))
+            val output = amplifier.runCode()
+
+            sequenceInput2.add(output.last())
+
+        }
+    }
+
+    return sequenceInput2.last()
+}
+
+private fun run(
+    list: List<String>,
+    sequenceInput1: List<String>
+): String {
+
+    val sequenceInput2 = mutableListOf("0")
+
+    val amplifiers = sequenceInput1.map { Amplifier(list, it) }
+    for (amplifier in amplifiers) {
+
+        amplifier.provideInputs(listOf(amplifier.phaseSetting, sequenceInput2.last()))
+        val output = amplifier.runCode()
+
+        sequenceInput2.add(output[0])
+
+    }
+
+    return sequenceInput2.last()
 }
 
 private fun nextInputSequence(sequenceInput1: List<String>, min: Int, max: Int): List<String> {
@@ -53,41 +135,27 @@ private fun nextInputSequence(sequenceInput1: List<String>, min: Int, max: Int):
     return result
 }
 
-private fun run(
-    list: List<String>,
-    sequenceInput1: List<String>
-): String {
-
-    val sequenceInput2 = mutableListOf("0")
-
-    sequenceInput1.map { Amplifier(list, it) }.forEach {
-        amplifier ->
-        run {
-            amplifier.provideInputs(listOf(amplifier.phaseSetting, sequenceInput2.last()))
-            val output = amplifier.runCode()
-
-            sequenceInput2.add(output[0])
-        }
-    }
-
-    return sequenceInput2.last()
-}
-
 class Amplifier(instructions: List<String>, val phaseSetting: String) {
 
     private var operationInstructions = instructions.toMutableList()
     private var inputs = ArrayDeque<String>()
     private var instructionPointer = 0
     private var outputs = mutableListOf<String>()
+    private var lastInstructionCode = -1
 
     fun runCode(): List<String> {
         do {
             val instruction = takeNextInstruction(operationInstructions, instructionPointer)
+            lastInstructionCode = instruction.opCode.opCode
+
+            if (instruction.isReadOperation() && inputs.isEmpty()) {
+                break
+            }
+
             instructionPointer = calcNextPointerPosition(instructionPointer, instruction, operationInstructions)
 
             apply(operationInstructions, instruction)
         } while (instruction.opCode.opCode != 99)
-
 
         return outputs.toList()
     }
@@ -225,7 +293,6 @@ class Amplifier(instructions: List<String>, val phaseSetting: String) {
         )
 
     private fun getInt(data: List<String>, i: Int) = Integer.parseInt(data[i])
-
-
+    fun isNotHalted() = lastInstructionCode != 99
 }
 
