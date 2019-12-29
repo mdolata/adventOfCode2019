@@ -35,7 +35,7 @@ fun solve1(data: String): String {
         }
     }
 
-    println ("$maxSequence $max")
+    println("$maxSequence $max")
     return "$max"
 }
 
@@ -59,7 +59,7 @@ fun solve2(data: String): String {
         }
     }
 
-    println ("$maxSequence $max")
+    println("$maxSequence $max")
     return "$max"
 }
 
@@ -67,14 +67,8 @@ fun runWithFeedbackLoop(list: MutableList<String>, sequenceInput1: List<String>)
     val sequenceInput2 = mutableListOf("0")
 
     val amplifiers = sequenceInput1.map { Amplifier(list, it) }
-    for (amplifier in amplifiers) {
 
-        amplifier.provideInputs(listOf(amplifier.phaseSetting, sequenceInput2.last()))
-        val output = amplifier.runCode()
-
-        sequenceInput2.add(output[0])
-
-    }
+    amplifiers.forEach { it.provideInputs(listOf(it.phaseSetting)) }
 
     while (amplifiers.all { it.isNotHalted() }) {
         for (amplifier in amplifiers) {
@@ -85,26 +79,6 @@ fun runWithFeedbackLoop(list: MutableList<String>, sequenceInput1: List<String>)
             sequenceInput2.add(output.last())
 
         }
-    }
-
-    return sequenceInput2.last()
-}
-
-private fun run(
-    list: List<String>,
-    sequenceInput1: List<String>
-): String {
-
-    val sequenceInput2 = mutableListOf("0")
-
-    val amplifiers = sequenceInput1.map { Amplifier(list, it) }
-    for (amplifier in amplifiers) {
-
-        amplifier.provideInputs(listOf(amplifier.phaseSetting, sequenceInput2.last()))
-        val output = amplifier.runCode()
-
-        sequenceInput2.add(output[0])
-
     }
 
     return sequenceInput2.last()
@@ -161,7 +135,7 @@ class Amplifier(instructions: List<String>, val phaseSetting: String) {
     }
 
     fun provideInputs(inputs: List<String>) {
-        this.inputs = ArrayDeque(inputs)
+        this.inputs.addAll(inputs)
     }
 
     private fun calcNextPointerPosition(
