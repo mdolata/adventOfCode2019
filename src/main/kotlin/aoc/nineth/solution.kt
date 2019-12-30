@@ -1,29 +1,18 @@
-package aoc.seventh
+package aoc.nineth
 
 import aoc.util.Amplifier
+
 
 fun solve1(data: String): String {
     val list = data.split(",").toMutableList()
 
-    var max = Integer.MIN_VALUE
+    val amplifier = Amplifier(list, "1")
 
-    var sequenceInput1 = listOf("0", "0", "0", "0", "0")
-    var maxSequence = listOf<String>()
+    amplifier.provideInputs(listOf("1", "1", "1"))
+    val result = amplifier.runCode()
 
-    for (i in 1..(5 * 5 * 5 * 5 * 5)) {
-        sequenceInput1 = nextInputSequence(sequenceInput1, 0, 4)
-        val output = runWithFeedbackLoop(list, sequenceInput1)
 
-        val parsedInt = Integer.parseInt(output)
-
-        if (parsedInt > max) {
-            max = parsedInt
-            maxSequence = sequenceInput1
-        }
-    }
-
-    println("$maxSequence $max")
-    return "$max"
+    return "$result"
 }
 
 fun solve2(data: String): String {
