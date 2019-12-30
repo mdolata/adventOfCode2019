@@ -46,7 +46,7 @@ class Amplifier(instructions: List<String>, val phaseSetting: String) {
     private fun expandMemoryIfNeeded(operationInstructions: MutableList<String>, instruction: Instruction) {
         checkAndExpandMemory(instruction.opCode.modeParam1, instruction.in1, operationInstructions)
         checkAndExpandMemory(instruction.opCode.modeParam2, instruction.in2, operationInstructions)
-        checkAndExpandMemory(0, instruction.out.toLong(), operationInstructions)
+        checkAndExpandMemory(instruction.opCode.modeOutput, instruction.out.toLong(), operationInstructions)
     }
 
     private fun checkAndExpandMemory(
