@@ -28,8 +28,8 @@ fun solve1(data: String): Pair<Int, Pair<Int, Int>> {
     }.map {
         Pair(it.first, it.second.filter { p -> p.value.content == Content.ASTEROID })
     }
-//(33, (9, 5)) ==> (33, (5, 8))   => false
-    customPrint2(map[0], board.first().length, board.size)
+
+//    customPrint2(map[0], board.first().length, board.size)
 
     val map2 = map.map {
         Pair(it.first, it.second.size)
@@ -37,7 +37,7 @@ fun solve1(data: String): Pair<Int, Pair<Int, Int>> {
         Pair(it.first.key, it.second)
     }
 
-    customPrint(map2, board.first().length, board.size)
+//    customPrint(map2, board.first().length, board.size)
 
     val result = map2.map {
         Pair(Pair(it.first.x, it.first.y), it.second)
@@ -142,8 +142,8 @@ fun calcPath(thisPlace: Point, asteroid: Point): Pair<Int, Int> {
     val gcd = gcd(abs(x), abs(y))
 
     return if (gcd > 1) Pair(x / gcd, y / gcd)
-    else if (x == 0) Pair(0, y/ (abs(y)))
-    else if (y == 0) Pair(x/ (abs(x)), 0)
+    else if (x == 0) Pair(0, y / (abs(y)))
+    else if (y == 0) Pair(x / (abs(x)), 0)
     else Pair(x, y)
 }
 
@@ -179,5 +179,37 @@ private fun parseRawBoard(board: List<String>): Map<Point, PlaceContent> {
 }
 
 fun solve2(data: String): String {
+
+    val bestPlace = solve1(data).second
+    val bestPoint = Point(bestPlace.first, bestPlace.second)
+
+    val board = data.split("\n")
+
+    val places = parseRawBoard(board)
+
+    var placesWithAsteroids = filterPlacesWithAsteroids(places)
+
+    var counter = 0
+    for (i in 1..20) {
+
+        val visibleAsteroids = filterPlacesWithAsteroids(
+            findVisibleAsteroidsFromPlace(places,
+                placesWithAsteroids.filter { p -> p.key != bestPoint }.map { p -> p.key },
+                bestPoint
+            )
+        )
+
+        counter += visibleAsteroids.size
+
+        placesWithAsteroids = remove(placesWithAsteroids, visibleAsteroids)
+    }
+
     return ""
+}
+
+fun remove(
+    placesWithAsteroids: Map<Point, PlaceContent>,
+    visibleAsteroids: Map<Point, PlaceContent>
+): Map<Point, PlaceContent> {
+    return placesWithAsteroids.filter { !visibleAsteroids.containsKey(it.key) }
 }
